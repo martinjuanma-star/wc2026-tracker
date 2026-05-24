@@ -419,7 +419,7 @@ body::before{content:'';position:fixed;inset:0;background-image:repeating-linear
 @keyframes celeb-in{0%{transform:scale(.4) rotate(-8deg);opacity:0;}100%{transform:scale(1) rotate(0deg);opacity:1;}}
 .celeb-flag{font-size:72px;display:block;margin-bottom:8px;animation:celeb-bounce .6s ease-in-out infinite alternate;}
 @keyframes celeb-bounce{0%{transform:translateY(0) scale(1);}100%{transform:translateY(-10px) scale(1.08);}}
-.celeb-number{font-family:'Orbitron',sans-serif;font-size:52px;font-weight:900;line-height:1;margin:8px 0;}
+.celeb-number{font-family:'Orbitron',sans-serif;font-size:40px;font-weight:900;line-height:1;margin:8px 0;letter-spacing:2px;}
 .celeb-exclaim{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:3px;margin-bottom:4px;}
 .celeb-team{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:2px;}
 .celeb-sub{font-size:13px;color:var(--text-2);margin-top:8px;letter-spacing:1px;}
@@ -599,6 +599,7 @@ body::before{content:'';position:fixed;inset:0;background-image:repeating-linear
 <div class="modal-overlay" id="sticker-modal">
   <div class="modal">
     <div class="modal-handle"></div>
+    <div style="font-size:11px;color:var(--text-2);text-align:center;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;">MANTENÉ PRESIONADO PARA VER DETALLES</div>
     <div class="modal-sticker-preview" id="modal-preview">🧩</div>
     <div class="modal-title" id="modal-title">Figurita</div>
     <div class="modal-sub" id="modal-sub">info</div>
@@ -615,7 +616,7 @@ body::before{content:'';position:fixed;inset:0;background-image:repeating-linear
         <button class="dup-counter-btn" onclick="changeDupCount(1)">+</button>
       </div>
     </div>
-    <button class="modal-close" onclick="closeModal('sticker-modal')">Listo ✓</button>
+    <button class="modal-close" onclick="closeModal('sticker-modal')">Cerrar ✕</button>
   </div>
 </div>
 
@@ -1180,17 +1181,25 @@ function passesFilter(id){
   return true;
 }
 
-function buildStickerCard(id,icon,name,num,extraClass=''){
-  const s=state.stickers[id], sState=s?s.state:'missing', count=s?(s.count||1):1;
-  const cls=sState==='owned'?'owned':sState==='duplicate'?'duplicate':'';
-  const dupBadge=sState==='duplicate'?`<div class="sticker-dup-badge">${count}</div>`:'';
-  const checkmark=sState==='owned'?`<div style="position:absolute;top:3px;right:5px;color:var(--green);font-size:13px;font-weight:900;">✓</div>`:'';
-  return`<div class="sticker-card ${cls} ${extraClass}" onclick="openStickerModal('${id}','${icon}','${name}','${num}')">
-    <div class="sticker-shimmer"></div>${dupBadge}${checkmark}
-    <span class="sticker-silhouette">${icon}</span>
-    <div class="sticker-num">${num}</div>
-    <div class="sticker-name">${name}</div>
-  </div>`;
+function buildStickerCard(id,icon,name,num,extraClass){
+  extraClass=extraClass||'';
+  var s=state.stickers[id], sState=s?s.state:'missing', count=s?(s.count||1):1;
+  var cls=sState==='owned'?'owned':sState==='duplicate'?'duplicate':'';
+  var dupBadge=sState==='duplicate'?('<div class="sticker-dup-badge">'+count+'</div>'):'';
+  var checkmark=sState==='owned'?('<div style="position:absolute;top:3px;right:5px;color:var(--green);font-size:13px;font-weight:900;">✓</div>'):'';
+  // Use data attributes — zero quote nesting issues
+  var el='<div class="sticker-card '+cls+' '+extraClass+'"'
+    +' data-sid="'+id+'"'
+    +' data-icon="'+encodeURIComponent(icon)+'"'
+    +' data-name="'+encodeURIComponent(name)+'"'
+    +' data-num="'+encodeURIComponent(num)+'"'
+    +' ontouchstart="lpStart(this)" ontouchend="lpEnd(this)" ontouchmove="lpCancel()" onclick="lpClick(this)">'
+    +'<div class="sticker-shimmer"></div>'+dupBadge+checkmark
+    +'<span class="sticker-silhouette">'+icon+'</span>'
+    +'<div class="sticker-num">'+num+'</div>'
+    +'<div class="sticker-name">'+name+'</div>'
+    +'</div>';
+  return el;
 }
 
 function buildAlbumContent(){
@@ -1274,12 +1283,59 @@ function buildAlbumContent(){
 // ================================================================
 // STICKER MODAL
 // ================================================================
+// ── QUICK TAP vs LONG PRESS system ──
+var lpTimer=null, lpFired=false;
+
+function lpStart(el){
+  lpFired=false;
+  lpTimer=setTimeout(function(){
+    lpFired=true;
+    var id=el.getAttribute('data-sid');
+    var icon=decodeURIComponent(el.getAttribute('data-icon'));
+    var name=decodeURIComponent(el.getAttribute('data-name'));
+    var num=decodeURIComponent(el.getAttribute('data-num'));
+    openStickerModal(id,icon,name,num);
+    if(navigator.vibrate) navigator.vibrate([40,30,40]);
+  },500);
+}
+function lpEnd(el){
+  if(lpTimer){clearTimeout(lpTimer);lpTimer=null;}
+}
+function lpCancel(){
+  if(lpTimer){clearTimeout(lpTimer);lpTimer=null;}
+  lpFired=false;
+}
+function lpClick(el){
+  if(lpFired){lpFired=false;return;} // was long press, skip click
+  var id=el.getAttribute('data-sid');
+  cycleStickerState(id);
+}
+
+function cycleStickerState(id){
+  var s=state.stickers[id];
+  var sState=s?s.state:'missing';
+  if(sState==='missing'){
+    state.stickers[id]={state:'owned',count:1};
+  } else if(sState==='owned'){
+    state.stickers[id]={state:'duplicate',count:1};
+  } else if(sState==='duplicate'){
+    var cur=state.stickers[id].count||1;
+    state.stickers[id]={state:'duplicate',count:cur+1};
+  }
+  saveState();
+  buildAlbumContent();
+  updateDashboard();
+  checkTeamCompletion();
+  if(navigator.vibrate) navigator.vibrate(30);
+}
+
+// ── MODAL: only used for long press detail/duplicate adjust ──
 function openStickerModal(id,icon,name,num){
   currentModalSticker=id;
   document.getElementById('modal-preview').textContent=icon;
   document.getElementById('modal-title').textContent=name;
-  document.getElementById('modal-sub').textContent=`Figurita ${num}`;
-  const s=state.stickers[id], sState=s?s.state:'missing', count=s?(s.count||1):1;
+  document.getElementById('modal-sub').textContent='Figurita '+num;
+  var s=state.stickers[id], sState=s?s.state:'missing', count=s?(s.count||1):1;
   updateModalState(sState,count);
   document.getElementById('sticker-modal').classList.add('open');
 }
@@ -1615,23 +1671,21 @@ const NUM_WORDS=['ZERO','ONE','TWO','THREE','FOUR','FIVE','SIX','SEVEN','EIGHT',
 function numberToWords(n){if(n<=20)return NUM_WORDS[n]||String(n);if(n<100){const t=['','','TWENTY','THIRTY','FORTY','FIFTY','SIXTY','SEVENTY','EIGHTY','NINETY'];const u=NUM_WORDS[n%10];return t[Math.floor(n/10)]+(n%10?' '+u:'');}return String(n);}
 
 function showCelebration(team){
-  const total=team.stickers.length;
-  const numWord=numberToWords(total);
-  const c1=team.color[0], c2=team.color[1];
-  const mainColor = c1==='#FFFFFF'?c2:c1;
-  const secColor = c2==='#000000'?c1:c2;
+  var c1=team.color[0], c2=team.color[1];
+  var mainColor=c1==='#FFFFFF'?c2:c1;
+  var secColor=c2==='#000000'?c1:c2;
   document.getElementById('celeb-flag').textContent=team.flag;
-  document.getElementById('celeb-number').textContent=numWord+' !!';
+  document.getElementById('celeb-number').textContent='SIX - SEVEN !!';
   document.getElementById('celeb-number').style.color=mainColor;
   document.getElementById('celeb-exclaim').textContent='¡¡COMPLETASTE!!';
   document.getElementById('celeb-team').textContent=team.name.toUpperCase();
   document.getElementById('celeb-team').style.color=secColor;
-  const card=document.getElementById('celebration-card');
+  var card=document.getElementById('celebration-card');
   card.style.borderColor=mainColor;
   card.style.boxShadow='0 0 60px '+mainColor+'66';
   document.getElementById('celebration-overlay').classList.remove('hidden');
   triggerConfetti(team.color, 90);
-  if(navigator.vibrate) navigator.vibrate([100,50,100,50,300]);
+  if(navigator.vibrate) navigator.vibrate([100,50,100,50,200,50,200]);
 }
 
 function closeCelebration(){
