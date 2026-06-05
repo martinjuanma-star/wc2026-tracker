@@ -495,10 +495,10 @@ body::before{content:'';position:fixed;inset:0;background-image:repeating-linear
       <div class="dash-pct" id="dash-pct">0% completado · 0 / 0 figuritas</div>
     </div>
     <div class="stats-grid">
-      <div class="stat-card" data-icon="✅"><div class="stat-num green" id="stat-owned">0</div><div class="stat-label">La Tengo</div></div>
-      <div class="stat-card" data-icon="❓"><div class="stat-num red" id="stat-missing">0</div><div class="stat-label">Me Falta</div></div>
-      <div class="stat-card" data-icon="🔄"><div class="stat-num gold" id="stat-dups">0</div><div class="stat-label">Repetidas</div></div>
-      <div class="stat-card" data-icon="📦"><div class="stat-num gold" id="stat-groups">0</div><div class="stat-label">Grupos 100%</div></div>
+      <div class="stat-card" data-icon="✅" onclick="goToAlbumFilter('owned')" style="cursor:pointer;"><div class="stat-num green" id="stat-owned">0</div><div class="stat-label">La Tengo</div></div>
+      <div class="stat-card" data-icon="❓" onclick="goToAlbumFilter('missing')" style="cursor:pointer;"><div class="stat-num red" id="stat-missing">0</div><div class="stat-label">Me Falta</div></div>
+      <div class="stat-card" data-icon="🔄" onclick="goToAlbumFilter('duplicate')" style="cursor:pointer;"><div class="stat-num gold" id="stat-dups">0</div><div class="stat-label">Repetidas</div></div>
+      <div class="stat-card" data-icon="📦" onclick="showCompletedTeamsModal()" style="cursor:pointer;"><div class="stat-num gold" id="stat-groups">0</div><div class="stat-label">Equipos ✅</div></div>
     </div>
     <div class="section-title">ACCESO RÁPIDO</div>
     <div class="quick-btns">
@@ -506,6 +506,7 @@ body::before{content:'';position:fixed;inset:0;background-image:repeating-linear
       <div class="quick-btn" onclick="showTab('fixture')"><span class="quick-btn-icon">📅</span><div><div class="quick-btn-text">Fixture</div><div class="quick-btn-sub">Resultados</div></div></div>
       <div class="quick-btn" onclick="showTab('standings')"><span class="quick-btn-icon">🏆</span><div><div class="quick-btn-text">Posiciones</div><div class="quick-btn-sub">Tablas y bracket</div></div></div>
       <div class="quick-btn" onclick="showTab('config')"><span class="quick-btn-icon">🔄</span><div><div class="quick-btn-text">Repetidas</div><div class="quick-btn-sub">Para intercambiar</div></div></div>
+      <div class="quick-btn" onclick="shareMissingWhatsApp()"><span class="quick-btn-icon">📋</span><div><div class="quick-btn-text">Faltantes</div><div class="quick-btn-sub">Exportar lista</div></div></div>
     </div>
     <div class="section-title">PROGRESO POR SECCIÓN</div>
     <div id="group-progress-list" style="padding:0 12px 20px;"></div>
@@ -572,7 +573,8 @@ body::before{content:'';position:fixed;inset:0;background-image:repeating-linear
       <div class="config-item" onclick="exportData()"><div class="config-item-left"><span class="config-item-icon">💾</span><div><div class="config-item-text">Exportar colección</div><div class="config-item-sub">Guardar copia en JSON</div></div></div><span class="config-item-arrow">›</span></div>
       <div class="config-item" onclick="document.getElementById('import-file').click()"><div class="config-item-left"><span class="config-item-icon">📂</span><div><div class="config-item-text">Importar colección</div><div class="config-item-sub">Cargar desde JSON</div></div></div><span class="config-item-arrow">›</span></div>
       <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)">
-      <div class="config-item" onclick="shareDuplicatesWhatsApp()"><div class="config-item-left"><span class="config-item-icon">📋</span><div><div class="config-item-text">Compartir repetidas</div><div class="config-item-sub">Lista para WhatsApp</div></div></div><span class="config-item-arrow">›</span></div>
+      <div class="config-item" onclick="shareDuplicatesWhatsApp()"><div class="config-item-left"><span class="config-item-icon">🔄</span><div><div class="config-item-text">Compartir repetidas</div><div class="config-item-sub">Lista por grupo para WhatsApp</div></div></div><span class="config-item-arrow">›</span></div>
+      <div class="config-item" onclick="shareMissingWhatsApp()"><div class="config-item-left"><span class="config-item-icon">❓</span><div><div class="config-item-text">Compartir faltantes</div><div class="config-item-sub">Lista por grupo para WhatsApp</div></div></div><span class="config-item-arrow">›</span></div>
     </div>
     <div class="config-section">
       <div class="config-section-title">📱 INSTALAR APP</div>
@@ -593,6 +595,18 @@ body::before{content:'';position:fixed;inset:0;background-image:repeating-linear
   </div>
 
 </div>
+</div>
+
+<!-- EQUIPOS COMPLETOS MODAL -->
+<div class="modal-overlay" id="completed-teams-modal" onclick="if(event.target===this)closeModal('completed-teams-modal')">
+  <div class="modal" style="max-height:80vh;overflow-y:auto;">
+    <div class="modal-handle"></div>
+    <div style="font-size:20px;font-weight:900;text-align:center;letter-spacing:2px;margin-bottom:4px;">🏆 EQUIPOS COMPLETOS</div>
+    <div style="font-size:12px;color:var(--text-2);text-align:center;letter-spacing:1px;margin-bottom:16px;" id="completed-teams-subtitle">— figuritas</div>
+    <div id="completed-teams-list" style="display:flex;flex-direction:column;gap:8px;"></div>
+    <div id="completed-teams-empty" style="display:none;text-align:center;padding:24px;color:var(--text-2);font-size:14px;">Todavía no completaste ningún equipo 💪<br><span style="font-size:12px;">¡Seguí pegando figuritas!</span></div>
+    <button class="modal-close" style="margin-top:16px;" onclick="closeModal('completed-teams-modal')">Cerrar ✕</button>
+  </div>
 </div>
 
 <!-- STICKER MODAL -->
@@ -712,37 +726,76 @@ body::before{content:'';position:fixed;inset:0;background-image:repeating-linear
 // ================================================================
 
 // Figu 01 = Escudo / Figu 13 = Plantilla / Figus 01-20 por equipo
-// La FWC00 es SOLO de la sección especial FWC, NO de los equipos
-const TEAM_STICKER_NAMES = [
-  '',             // index 0 — no usado
-  'Escudo',       // 01
-  'Portero 1',    // 02
-  'Defensa 1',    // 03
-  'Defensa 2',    // 04
-  'Defensa 3',    // 05
-  'Mediocampista 1', // 06
-  'Mediocampista 2', // 07
-  'Mediocampista 3', // 08
-  'Delantero 1',  // 09
-  'Delantero 2',  // 10
-  'Capitán',      // 11
-  'Figura',       // 12
-  'Plantilla',    // 13
-  'Promesa 1',    // 14
-  'Promesa 2',    // 15
-  'DT',           // 16
-  'Jugador 17',   // 17
-  'Jugador 18',   // 18
-  'Jugador 19',   // 19
-  'Jugador 20'    // 20
-];
+// Índice 0 = no usado · 1 = Escudo · 13 = Plantilla · 2-12,14-20 = jugadores
+const PLAYER_NAMES = {
+  // ── GRUPO A ──
+  MEX:['','Escudo','Malagón','Vásquez','Sánchez','Montes','Gallardo','Reves','Lainez','Rodriguez','Álverez','Pineda','Ruiz','Plantilla','Sánchez','Lozano','S.Giménez','R.Jiménez','Vega','Alvarado','Huerta'],
+  RSA:['','Escudo','Williams R.','S.Chaine','Modiba','Kabini','Mbonkazi','Ndamane','Ngezana','Mudau','Sibisi','Mokoena','Mbatha','Plantilla','Aubaas','Sithole','Mbule','Foster','Rayners','Nkota','Apollis'],
+  KOR:['','Escudo','JO','S KIM','M KIM','V.Cho','V. Seol','Lee H.','T. Lee','M.Lee','J.Lee','I.Hwang','K.Lee','Plantilla','S.Paik','J.Castrop','D.Lee','G.Cho','H.Son','H.Hwang','H. Oh'],
+  CZE:['','Escudo','Kovář','Stanek','Krejčí','Coufal','Zalenv','Holes','Zima','Sadilex','Provod','Cerv','Soucek','Plantilla','Pavel','Vydra','Kusej','Chorv','Cerny','Hlozek','Schick'],
+  // ── GRUPO B ──
+  CAN:['','Escudo','Clair','Davies','Johnston','Confirmar','Laryea','Cornelius','Bombito','Miller','Eustaquio','Koné I.','Osorio','Plantilla','Shffelburg','Choiniere','Sigur','Buchanan','Millar','Larin','David'],
+  BIH:['','Escudo','Vasilj','Dedic','Kolasinac','Muharemovic','Mujakić','Katic','Hadziahmetovic','tahirovic','Gigovic','Sunjic','Basic','Plantilla','Burnic','Majraktarevic','Memic','Demirovic','Dzeko','Baždar','Tabakovic'],
+  QAT:['','Escudo','Barsham','Albrake','Mendes','Ahmed','Khoukhi','Miguel','Salman','Mannai','Boudiaf','Madibo','Fatehi','Plantilla','Waad','Hatem','Al-Havdos','Junior','Afif','Al-Ganehi','A.Ali'],
+  SUI:['','Escudo','Kobel','Mvogo','Akanji','Rodriguez','Elvedi','Amenda','Widmer','Xhaka','Zakaria','Freuler','Rieder','Plantilla','Jashari','Manzambi','Aebischer','Embolo','Vargas','Noove','Amdouni'],
+  // ── GRUPO C ──
+  BRA:['','Escudo','Alisson','Bento','Marquinhos','Militão','Magalhaes','Danilo','Wesley','Paquetá','Casemiro','Guimaraes','L.Henrique','Plantilla','Vinicius Junior','Rodrygo','João Pedro','Matheus C.','Martinelli','Raphinha','Estevao'],
+  MAR:['','Escudo','Bounou','El Kajou','Hakimi','Mazraqui','Agüero','Saiss','El Vamio','Masina','Amrabat','Ounahi','Ben Seghir','Plantilla','El Khannouss','Saibari','En-Nesvri','Ezzalzouli','Rahimi','Diaz','El Kaabi'],
+  HAI:['','Escudo','Placide','Acus','Experience','Duverne','Ade','Lacroix','Metusala','Delcroix','Pierre','Jacques','Bellegarde','Plantilla','Atty','Etienne Jr.','Casimir','Providence','Nazon','Dedson','Pierrot'],
+  SCO:['','Escudo','Gunn','Hendry','Tiernev','Hickev','Robertson','McKenna','Souttar','Ralston','Hanlev','McTominav','Gilmour','Plantilla','Ferguson','Christie','McLean','McGinn','Dvkes','Adams T.','Gennon-Doak'],
+  // ── GRUPO D ──
+  USA:['','Escudo','Freese','Richards','Ream','McKenzie','Freeman','Robinson','Adams T.','Tessmann','McKennie','Roldan','Weah','Plantilla','Luna D.','Tillman','Pulisic','Aaronson','Pepi','Wright','Balogun'],
+  PAR:['','Escudo','Fernández','Gill','Gomez','Balbuena','Cáceres','Alderete','Alonso','Villasanti','Gomez','Bobadilla','Cubas','Plantilla','Galarza Fonda','Enciso','Romero Gamarra','Almirón','Sosa R.','Romero','Sanabria'],
+  AUS:['','Escudo','Ryan M.','Gauci','Souttar','Circati','Bos','Behich','Burgess','Miller','Degenek','Irvine','McGree','Plantilla','O\'neill','Metcalfe','Vazbek','Goodwin','Venci','Irankunda','Touré'],
+  TUR:['','Escudo','Cakir','Muldur','Celik','Bardakci','Sovuncu','Demiral','Kadioglu','Avhan','Vuksek','Çalhanoğlu','Koncu','Plantilla','Guler','Kahveci','Akgun','Uzun','Vilmaz','Akturkoglu','Vildiz'],
+  // ── GRUPO E ──
+  GER:['','Escudo','Ter Stegen','Tah','Raum','Schlotterbeck','Rüdiger','Anton','Baku','Mittelstädt','Kimmich','Wirtz','Nmecha','Plantilla','Goretzka','Musiala','Gnabry','Havertz','Sané','Adevemi','Woltemade'],
+  CUW:['','Escudo','Room','Obispo','Floranus','Gaari','Brenet','Van Eijma','Sambo','Comenencia','Roemeratoe','Bacuna','Bacuna','Plantilla','Chong','Gorré','Margaritha','Locadia','Antonisse','Hastaneer','Hansen'],
+  CIV:['','Escudo','Fofana Y.','Konan','Singo','Kossounou','Ndicka','Bolv','Agbadou','Diomande','Kessié','Fofana S.','Sangaré','Plantilla','Gbamié','Diallo A.','Haller','Adingra','Diamonde','Guessand','Diakité'],
+  ECU:['','Escudo','Galíndez','Valle','Hincapié','Estupiñán','Pancho','Preciado','Ordoñez','Caicedo','Franco','Paez','Vite','Plantilla','Veboah','Campana','Plata','Angulo','Minda','Rodriguez','Valencia'],
+  // ── GRUPO F ──
+  NED:['','Escudo','Verbruggen','Van Dijk','Van de Ven','Timber','Dumfries','Aké','Frimpong','Van Hecke','Reijnders','Gravenberch','Koopmeiners','Plantilla','De Jong','Simons','Kluivert','Depav','Malen','Weghorst','Gakpo'],
+  JPN:['','Escudo','Suzuki','Mochizuki','Seko','Suzuki','Taniguchi','watanabe','Sano','Soma','Tanaka','Kamada','Kubo','Plantilla','Doan','Nakamura','Minamino','Machino','Ito','Ogawa','Ueda'],
+  SWE:['','Escudo','Johansson','Hien','Gudmundsson','Holm','Nilsson LindeloF','Lagerbielke','Bergvall','Larsson','Karlstrom','Avari','Svanberg','Plantilla','Svensson','Sema','Bardghji','Kulusevski','Elanga','Isak','Gvokeres'],
+  TUN:['','Escudo','Ben Said','Dahmen','Valerv','Talbi','Meriah','Abdi','Bronn','Skhiri','Laidouni','Sassi','Ben Romdhane','Plantilla','Mejbri','Achouri','Saad','Mastouri','Gharbi','Ltaief','Sliti'],
+  // ── GRUPO G ──
+  BEL:['','Escudo','Courtois','Theate','Castagne','Debast','Mechele','De Cuyper','Meunier','Tielemans','Onana','Raskin','Saelemaekers','Plantilla','Vanaken','De Bruyne','Doku','De Ketelaere','Trossard','Openda','Lukaku'],
+  EGY:['','Escudo','El-Shenawy','Hanv','Hamdy','Ibrahim','Sobhi','Rabia','Abdelmaguid','Fatouh','Attia','Zizo','Fathy','Plantilla','Lasheen','Ashour','Faisal','Salah','Mohamed','Trezeguet','Marmoush'],
+  IRN:['','Escudo','Beiranvand','Pouraliganji','Hajsafi','Mohammadi','Khalilzadeh','Rezaeian','Kanaani','Moharrami','Hardani','Ezatolahi','Ghoddos','Plantilla','Noorafkan','Gheshmi','Mohebi','Azmoun','Taremi','Jahanbakhsh','Gholizadeh'],
+  NZL:['','Escudo','Crocombe','Paulsen','Boxall','Cacace','Pavne','Bindon','De Vries','Surman','Bell','Singh','Thomas','Plantilla','Garbett','Stamenic','Old','Wood','Just','McCowatt','Barbarouses'],
+  // ── GRUPO H ──
+  ESP:['','Escudo','U.Simón','Le Normand','Laporte','Huijsen','Porro','Carvajal','Cucurella','Zubimendi','Rodri','Pedri','Fabian','Plantilla','Merino','Yamal','Olmo','Williams','Torres','Morata','Oyarzabal'],
+  CPV:['','Escudo','Vozinha','Costa','Pico','Diney','Moreira','Wagner Pina','João Paulo','Semedo','Kevin Pina','Andrade','Monteiro J.','Plantilla','Duarte','Rodrigues','Cabral','Mendes','Livramento','Semedo','Bebé'],
+  KSA:['','Escudo','Al-Aqidi','Alsanbi','Abdulhamid','Buwashl','Thikri','Alharbi','Altambakti','Aljuwavr','Aljohani','Alkhaibari','Al-Dawsari N.','Plantilla','Alshamat','Alsahafi','Al-Dawsari M.','Alobud','Albrikan','Alshehri','Alhamdan'],
+  URU:['','Escudo','Rochet','Mele','Araujo','Gimenez','Cáceres','Olivera','Varela G.','Nandez','Valverde','Arrascaeta','Bentancur','Plantilla','Ugarte M.','De la Cruz','Araujo','Nuñez','Viñas','Aguirre','Pellistri'],
+  // ── GRUPO I ──
+  FRA:['','Escudo','Maignan','Hernandez','Saliba','Kounde','Konaté','Upamecano','Digne','Tchouameni','Camavinga','Koné M.','Rabiot','Plantilla','Olise','Dembelé','Barcola','Doué','Coman','Ekitike','Mbappé'],
+  SEN:['','Escudo','Mendy E.','Diouf','Niakhate','Seck','Jakobs','Diouf','Koulibaly','Gana Gueye','Sarr','Gueve','Diarra','Plantilla','Camara','Mané','Sarr I','Día','Ndiaye','Sackson','Diatta'],
+  IRQ:['','Escudo','Hassan J','Sulaka','Ali','Hashem','Doski','Tahseen','Younis','Iqbal','Al-Ammari','Bayesh','Jasim','Plantilla','Amyn','Sher','Farji','Rashid','Al-Ammadi','Hussein','Ali'],
+  NOR:['','Escudo','Nyland','Ryerson','Ostigard','Vassbakk Ajer','Holmgren Pedersen','Modller Wolfe','Heggem','Thorsby','Odegaard','Berge','Schjelderup','Plantilla','Berg','Halland','Sørloth','Donnum','Strand Larsen','Nusa','Bobb'],
+  // ── GRUPO J ──
+  ARG:['','Escudo','E.Martínez','N. Molina','C. Romero','N. Otamendi','N.Tagliafico','L Balerdi','Enzo F.','Mc.Allister','De Paul','Palacios','Paredes','Plantilla','Nico Paz','Mastantuono','Nico Gonzalez','Messi','Lautaro M','Julián A.','G.Simeone'],
+  ALG:['','Escudo','Guendouz','Bensebaini','Atal','Ait-Nouri','Tougai','Mandi','Bennacer','Aouar','Boudaoui','Zerrouki','Bentaleb','Plantilla','Chaïbi','Mahrez','Benrahma','H.Moussa','Gouiri','Bounedja','Amoura'],
+  AUT:['','Escudo','Schlager','Pentz','Alaba','Danso','Lienhart','Posch','Mwenw','Prass','Schlagar','Sabitzer','Laimer','Plantilla','Grilltsch','Seiwald','Schmid','Wimmer','Baumgartner','Gregoritsch','Arnautovic'],
+  JOR:['','Escudo','Abulaila','Haddad','Abu Hashish','Al-Arab','Nasib','Obaid','Abualnadi','Saadeh','Al.Rashdan','Al.Rawabdeh','Abu taha','Plantilla','Jamous','Al.Taamari','Al.Naimat','Al.mardi','Ali.Olwan','A.Zrayq','Sabra'],
+  // ── GRUPO K ──
+  POR:['','Escudo','Diogo Costa','José Sa','Ruben Dias','Joao Cancelo','Dalot','Mendes','Inacio','Silva','Fernandes','Neves','Vitinha','Plantilla','Joao Neves','C.Ronaldo','Trincao','Felix','Ramos','P.Neto','Leao'],
+  COD:['','Escudo','Mpasi','Wan Bissaka','Tuanzebe','Masuaku','Mbemba','Kayembe J.','Pickel','Mukau','Kayembe E.','Moutoussamy','Sadiki','Plantilla','Bongonda','Elia','Wissa','Cipenga','Mavele','Bakambu','Mbuku'],
+  UZB:['','Escudo','Yusupov','Sayfiev','Nasrullaev','Eshmuroov','Aliqulov','Ashurmatov','Alijonov','Khusanov','Hamrobekov','Shukurov','Iskanderov','Plantilla','Turgunboev','Erkinov','Shomurodov','Urunov','Masharipov','Sergeev','Fayzullaev'],
+  COL:['','Escudo','Vargas D.','Ospina','Sanchez','Mina','Muñoz','Mojica','Lucumi','Arias','Lerma','Castaño','Rios R.','Plantilla','James','Quintero','Carrascal','Arias','Cordoba','Luis Suarez','L.Diaz.'],
+  // ── GRUPO L ──
+  ENG:['','Escudo','Pickford','Stone','Guehi','Konsa','Alexander-Arnold','James','Burn','Henderson','Rice','Bellingham','Palmer','Plantilla','Rogers','Gordon','Foden','Saka','Kane','Rashford','Watkins'],
+  CRO:['','Escudo','Livaković','Ćaleta-Car','Gvardiol','Stanisic','Vuskovic','Šutalo','Jakic','Modric','Kovacic','Baturina','Majer','Plantilla','Pašalić','Sucic','Perisic','Pasalic','Budimir','Kramaric','Ivanovic'],
+  GHA:['','Escudo','Ati-Zigi','Lamptey','Salisu','Seidu','Djiku','Mensah','Yirenkyi','Fatawu','Partey','Samed','Sulemana','Plantilla','Kudus','Williams','Avew J','Avew A','Paintsil','Bukari','Semenyo'],
+  PAN:['','Escudo','Mosquera','Mejía','Escobar','Andrade','Murillo M.','Davis','Córdoba J.','Blackman','Martinez','Godoy','Carrasquilla','Plantilla','Barcenas','Harvey','Diaz','Fajardo','Waterman','Rodriguez','Quintero'],
+};
 
 function generateTeamStickers(code) {
   var arr = [];
-  // Solo del 01 al 20 — sin figu 00
+  var names = PLAYER_NAMES[code] || ['','Escudo','Portero','Defensa','Defensa','Defensa','Mediocampista','Mediocampista','Mediocampista','Delantero','Delantero','Capitán','Figura','Plantilla','Promesa','Promesa','DT','Jugador 17','Jugador 18','Jugador 19','Jugador 20'];
   for(var i=1;i<=20;i++){
     var numStr = String(i).padStart(2,'0');
-    arr.push({id:code+numStr, name:TEAM_STICKER_NAMES[i]||('Jugador '+i), num:numStr});
+    arr.push({id:code+numStr, name:names[i]||('Jugador '+i), num:numStr});
   }
   return arr; // 20 stickers por equipo
 }
@@ -1107,9 +1160,14 @@ function updateDashboard(){
   document.getElementById('stat-owned').textContent=stats.owned;
   document.getElementById('stat-missing').textContent=stats.missing;
   document.getElementById('stat-dups').textContent=stats.totalDupCount;
-  let completedGroups=0;
-  Object.keys(GROUPS).forEach(g=>{const p=getGroupProgress(g);if(p.owned===p.total&&p.total>0)completedGroups++;});
-  document.getElementById('stat-groups').textContent=completedGroups;
+  let completedTeams=0;
+  Object.keys(GROUPS).forEach(g=>{
+    GROUPS[g].teams.forEach(team=>{
+      const allOwned=team.stickers.every(s=>{const st=state.stickers[s.id];return st&&(st.state==='owned'||st.state==='duplicate');});
+      if(allOwned) completedTeams++;
+    });
+  });
+  document.getElementById('stat-groups').textContent=completedTeams;
   buildGroupProgressList();
   if(pct>=78&&pct<79) showToast('¡Casi como Brasil en el 7-1! 😂');
   if(pct===100) celebrate();
@@ -1162,6 +1220,15 @@ function switchGroup(code,el){
   document.querySelectorAll('.group-tab').forEach(t=>t.classList.remove('active'));
   if(el) el.classList.add('active');
   else document.querySelectorAll('.group-tab').forEach(t=>{if(t.textContent.replace(/\s/g,'').includes(code))t.classList.add('active');});
+  buildAlbumContent();
+}
+
+function goToAlbumFilter(f){
+  showTab('album');
+  currentFilter=f;
+  document.querySelectorAll('.filter-btn').forEach(b=>{
+    b.classList.toggle('active', b.getAttribute('onclick')===`setFilter('${f}',this)`);
+  });
   buildAlbumContent();
 }
 
@@ -1599,24 +1666,109 @@ function buildDuplicatesList(){
   container.innerHTML=html;
 }
 
+function _buildStickerLabel(id){
+  // Devuelve "(#) Nombre" para usar en exports
+  const teamKey=id.replace(/\d+$/,'');
+  const num=parseInt(id.replace(/^[A-Z]+/,''),10);
+  if(id.startsWith('FWC')){const s=FWC_STICKERS.find(x=>x.id===id);return s?`(${num}) ${s.name}`:id;}
+  if(id.startsWith('CC')){const s=CC_STICKER_NAMES.find(x=>x.id===id);return s?`(${num}) ${s.name}`:id;}
+  const names=PLAYER_NAMES[teamKey];
+  const playerName=names&&names[num]?names[num]:null;
+  return playerName?`(${num}) ${playerName}`:id;
+}
+
+function _isMissing(id){
+  const st=state.stickers[id];
+  return !st||st.state==='missing';
+}
+function _matchesFilter(id,filterState){
+  if(filterState==='missing') return _isMissing(id);
+  const st=state.stickers[id];
+  return st&&st.state===filterState;
+}
+
+function _buildExportByGroup(filterState){
+  // Agrupa stickers por grupo → equipo, returns string multilínea
+  let msg='';
+  const specialFWC=[],specialCC=[];
+  // Para FWC/CC sólo buscamos en state.stickers si hay explícitos
+  if(filterState==='missing'){
+    FWC_STICKERS.forEach(s=>{if(_isMissing(s.id))specialFWC.push(s.id);});
+    CC_STICKER_NAMES.forEach(s=>{if(_isMissing(s.id))specialCC.push(s.id);});
+  } else {
+    Object.entries(state.stickers).forEach(([id,s])=>{
+      if(s.state!==filterState) return;
+      if(id.startsWith('FWC')){specialFWC.push(id);return;}
+      if(id.startsWith('CC')){specialCC.push(id);return;}
+    });
+  }
+  Object.entries(GROUPS).forEach(([gCode,g])=>{
+    const lines=[];
+    g.teams.forEach(t=>{
+      const teamStickers=t.stickers
+        .filter(s=>_matchesFilter(s.id,filterState))
+        .map(s=>_buildStickerLabel(s.id));
+      if(teamStickers.length>0)
+        lines.push(`  ${t.flag} ${t.name}: ${teamStickers.join('; ')}`);
+    });
+    if(lines.length>0) msg+=`📌 ${g.name}\n${lines.join('\n')}\n\n`;
+  });
+  if(specialFWC.length>0)
+    msg+=`⭐ Especiales FWC: ${specialFWC.map(_buildStickerLabel).join(', ')}\n\n`;
+  if(specialCC.length>0)
+    msg+=`🥤 Coca-Cola CC: ${specialCC.map(_buildStickerLabel).join(', ')}\n\n`;
+  return msg.trim();
+}
+
 function shareDuplicatesWhatsApp(){
-  const byTeam={};
-  Object.entries(state.stickers).forEach(([id,s])=>{
-    if(s.state!=='duplicate') return;
-    let teamKey=id.replace(/\d+$/,'');
-    if(id.startsWith('FWC')) teamKey='FWC';
-    if(id.startsWith('CC')) teamKey='CC';
-    if(!byTeam[teamKey]) byTeam[teamKey]=[];
-    byTeam[teamKey].push(`#${id}`);
-  });
-  let msg=`📋 MIS REPETIDAS - WC 2026 🏆\n\n`;
-  Object.entries(byTeam).forEach(([team,ids])=>{
-    const t=Object.values(GROUPS).flatMap(g=>g.teams).find(t=>t.code===team);
-    const icon=team==='FWC'?'⭐':team==='CC'?'🥤':t?t.flag:'🏳️';
-    msg+=`${icon} ${team}: ${ids.join(', ')}\n`;
-  });
-  msg+=`\n¿Intercambiamos? 🤝`;
+  const body=_buildExportByGroup('duplicate');
+  if(!body){showToast('No tenés repetidas todavía 🙌');return;}
+  const total=Object.values(state.stickers).filter(s=>s.state==='duplicate').length;
+  const msg=`🔄 MIS REPETIDAS - WC 2026 🏆\n(${total} figurita${total!==1?'s':''})\n\n${body}\n\n¿Intercambiamos? 🤝`;
   window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`,'_blank');
+}
+
+function shareMissingWhatsApp(){
+  const body=_buildExportByGroup('missing');
+  if(!body){showToast('¡No te falta ninguna! 🏆🎉');return;}
+  const total=Object.values(state.stickers).filter(s=>s.state==='missing'||!s).length;
+  // contar faltantes reales
+  let missingCount=0;
+  [...Object.values(GROUPS).flatMap(g=>g.teams.flatMap(t=>t.stickers)),...FWC_STICKERS,...CC_STICKER_NAMES]
+    .forEach(s=>{const st=state.stickers[s.id];if(!st||st.state==='missing')missingCount++;});
+  const msg=`❓ MIS FALTANTES - WC 2026 🏆\n(${missingCount} figurita${missingCount!==1?'s':''})\n\n${body}\n\n¿Me las conseguís? 🙏`;
+  window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`,'_blank');
+}
+
+function showCompletedTeamsModal(){
+  const allTeams=Object.values(GROUPS).flatMap(g=>g.teams.map(t=>({...t,group:g.name})));
+  const completed=allTeams.filter(t=>
+    t.stickers.every(s=>{const st=state.stickers[s.id];return st&&(st.state==='owned'||st.state==='duplicate');})
+  );
+  const listEl=document.getElementById('completed-teams-list');
+  const emptyEl=document.getElementById('completed-teams-empty');
+  const subtitleEl=document.getElementById('completed-teams-subtitle');
+  subtitleEl.textContent=`${completed.length} de 48 equipo${completed.length!==1?'s':''}`;
+  if(completed.length===0){
+    listEl.innerHTML='';listEl.style.display='none';emptyEl.style.display='block';
+  } else {
+    emptyEl.style.display='none';listEl.style.display='flex';
+    // Agrupar por grupo
+    const byGroup={};
+    completed.forEach(t=>{if(!byGroup[t.group])byGroup[t.group]=[];byGroup[t.group].push(t);});
+    listEl.innerHTML=Object.entries(byGroup).map(([gName,teams])=>`
+      <div style="background:var(--surface-2);border-radius:12px;padding:10px 14px;border:1px solid rgba(0,200,100,0.25);">
+        <div style="font-size:11px;color:var(--green);letter-spacing:2px;font-weight:700;margin-bottom:8px;">${gName}</div>
+        ${teams.map(t=>`<div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05);">
+          <span style="font-size:22px;">${t.flag}</span>
+          <div>
+            <div style="font-weight:700;font-size:14px;">${t.name}</div>
+            <div style="font-size:11px;color:var(--green);">✅ 20/20 figuritas</div>
+          </div>
+        </div>`).join('')}
+      </div>`).join('');
+  }
+  document.getElementById('completed-teams-modal').classList.add('active');
 }
 
 function updateProfile(){
